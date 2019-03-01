@@ -1,0 +1,26 @@
+{
+  "name": "bitcoin-wallet",
+  "version": "1.0.0",
+  "description": "Bitcoin Wallet Implementation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tittuvarghese/bitcoin-wallet.git"
+  },
+  "author": "Tittu Varghese",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tittuvarghese/bitcoin-wallet/issues"
+  },
+  "homepage": "https://github.com/tittuvarghese/bitcoin-wallet#readme",
+  "dependencies": {
+    "bitcoin-core": "^2.0.0",
+    "bitcoinjs-lib": "^4.0.3",
+    "bitcore-explorers": "^1.0.1",
+    "bitcore-lib-cash": "^8.1.0",
+    "request": "^2.88.0"
+  }
+}
