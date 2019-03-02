@@ -7,7 +7,7 @@ let privateKey = new bch.PrivateKey('KxxRyrfLhDVz4ZuoUKTuKRcrapVBdvkc9bxusd5yuyY
 let senderAddress = privateKey.toAddress('testnet') //bchtest:qps60h780gvjcn80gn6d576w2nt80k47tv0wa2e6j6"
 let receiverAddress = "bchtest:qps60h780gvjcn80gn6d576w2nt80k47tv0wa2e6j6"
 
-let txnAmount = 0.001 * satoshiConverter // 0.001 BCH
+let txnAmount = 0.0009 * satoshiConverter // 0.001 BCH
 
 insight.getUnspentUtxos(senderAddress, function (error, utxos) {
   if (error) {
@@ -15,16 +15,13 @@ insight.getUnspentUtxos(senderAddress, function (error, utxos) {
     return
   }
 
-  const utxo = {
-    txid: utxos[0].txid,
-    outputIndex: utxos[0].vout,
-    script: utxos[0].scriptPubKey,
-    satoshis: utxos[0].satoshis
-  }
+  //console.log(utxos)
+
 
   const transaction = new bch.Transaction()
-    .from(utxo)
+    .from(utxos)
     .to(receiverAddress, txnAmount)
+    .change(senderAddress)
     .sign(privateKey)
 
   console.log(transaction.toString())
