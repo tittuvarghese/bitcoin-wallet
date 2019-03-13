@@ -14,7 +14,7 @@ const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet)
 txb.setVersion(1) // Changes based on consensus. Commonly used version is 1
 
 // BTC Txn Fee
-let txnFee = 0.0004 * satoshiConverter // 0.0004 BTC
+let txnFee = 0.0005 * satoshiConverter // 0.0004 BTC
 
 // BTC to Satoshi Conversion - Input Amount
 let txnInputAmount = 0.000565 * satoshiConverter; // 0.7 BTC
@@ -43,16 +43,17 @@ let accumilateValue = 0;
 let transactionProcessed = false;
 let balanceAmount = 0;
 
-request('https://testnet.blockchain.info/unspent?active='+senderAddress+'&confirmations=6', { json: true }, (err, res, utx) => {
+request('https://api.blockcypher.com/v1/btc/test3/addrs/'+senderAddress+'?unspentOnly=true&token=33e0954b05094211b3241cc1c088b8d8', { json: true }, (err, res, utx) => {
   if(err) {
     console.log("unable to fetch utx.")
   } else if(res.statusCode == 500) {
     console.log("No UTXs found")
   } else {
-    utx.unspent_outputs.forEach(function(singleUtx) {
+    utx.txrefs.forEach(function(singleUtx) {
+
       if(singleUtx.value >= txnInputAmount) {
 
-        txb.addInput(singleUtx.tx_hash_big_endian, singleUtx.tx_output_n) // Sender Address, (Index) Vout
+        txb.addInput(singleUtx.tx_hash, singleUtx.tx_output_n) // Sender Address, (Index) Vout
 
         // TxnFee = Input - Output
         balanceAmount = singleUtx.value - txnInputAmount;
@@ -64,19 +65,20 @@ request('https://testnet.blockchain.info/unspent?active='+senderAddress+'&confir
         let rawTxn = txb.build().toHex()
         console.log(rawTxn)
         // Boradcast
-        client.sendRawTransaction(rawTxn, (error, response) => {
-          if (error) console.log(error);
-          console.log(response)
-        });
+        // client.sendRawTransaction(rawTxn, (error, response) => {
+        //   if (error) console.log(error);
+        //   console.log(response)
+        // });
 
         transactionProcessed = true
       }
     });
 
     if(transactionProcessed == false) {
-        utx.unspent_outputs.forEach(function(singleUtx) {
+        utx.txrefs.forEach(function(singleUtx, index) {
           accumilateValue += singleUtx.value
-          txb.addInput(singleUtx.tx_hash_big_endian, singleUtx.tx_output_n) // Sender Address, Input Amount
+          txb.addInput(singleUtx.tx_hash, singleUtx.tx_output_n) // Sender Address, Input Amount
+          txb.sign(index+1, senderKey)
         });
 
         if(accumilateValue <= txnInputAmount) {
@@ -86,14 +88,13 @@ request('https://testnet.blockchain.info/unspent?active='+senderAddress+'&confir
           txb.addOutput(receiverAddress, txnOutputAmount) // Reciever Address, Txn Amount Satoshis.
           txb.addOutput(senderAddress, balanceAmount) // Sender Address, Txn Amount Satoshis. Balance to origin address
 
-          txb.sign(0, senderKey)
           let rawTxn = txb.build().toHex()
           console.log(rawTxn)
           // Boradcast
-          client.sendRawTransaction(rawTxn, (error, response) => {
-            if (error) console.log(error);
-            console.log(response)
-          });
+          // client.sendRawTransaction(rawTxn, (error, response) => {
+          //   if (error) console.log(error);
+          //   console.log(response)
+          // });
 
         } else {
           console.log("Not enough balance")
